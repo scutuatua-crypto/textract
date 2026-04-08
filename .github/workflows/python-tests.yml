@@ -1,0 +1,54 @@
+name: Python CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        python-version: ["2.7", "3.7"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install system dependencies
+        run: sudo ./provision/debian.sh
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Install Python dependencies
+        run: |
+          if [[ "${{ matrix.python-version }}" == "3.7" ]]; then
+            ./provision/python3.sh
+          fi
+          if [[ "${{ matrix.python-version }}" == "2.7" ]]; then
+            ./provision/python2.sh
+          fi
+          pip install .[pocketsphinx]
+
+      - name: Run tests (make)
+        run: cd tests && make && cd -
+
+      - name: Run nosetests with coverage
+        run: nosetests --with-coverage --cover-package=textract
+
+      - name: Run pytest
+        run: cd tests && pytest && cd -
+
+      - name: Report coverage
+        run: coveralls
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        continue-on-error: true
