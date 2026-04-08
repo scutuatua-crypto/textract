@@ -10,6 +10,9 @@ jobs:
   test:
     runs-on: ubuntu-20.04
 
+    permissions:
+      contents: read
+
     strategy:
       matrix:
         python-version: ["2.7", "3.7"]
@@ -39,13 +42,15 @@ jobs:
           pip install .[pocketsphinx]
 
       - name: Run tests (make)
-        run: cd tests && make && cd -
+        working-directory: tests
+        run: make
 
       - name: Run nosetests with coverage
         run: nosetests --with-coverage --cover-package=textract
 
       - name: Run pytest
-        run: cd tests && pytest && cd -
+        working-directory: tests
+        run: pytest
 
       - name: Report coverage
         run: coveralls
