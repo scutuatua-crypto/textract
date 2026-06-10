@@ -95,7 +95,7 @@ class ShellParser(BaseParser):
                 # File not found.
                 # This is equivalent to getting exitcode 127 from sh
                 raise exceptions.ShellError(
-                    " ".join(args),
+                    " ".join(str(a) for a in args),
                     127,
                     b"",
                     b"",
@@ -109,7 +109,7 @@ class ShellParser(BaseParser):
         # if pipe is busted, raise an error (unlike Fabric)
         if pipe.returncode != 0:
             raise exceptions.ShellError(
-                " ".join(args),
+                " ".join(str(a) for a in args),
                 pipe.returncode,
                 stdout,
                 stderr,
